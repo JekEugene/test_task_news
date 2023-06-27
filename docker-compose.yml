@@ -1,0 +1,29 @@
+version: "3.7"
+services:
+    api:
+        build:
+            dockerfile: Dockerfile
+            context: .
+        depends_on: 
+            - postgres-news
+        environment: 
+            NODE_ENV: development
+            PORT: 3000
+        ports:
+            - "8080:3000"
+
+    postgres-news:
+        image: postgres:13
+        container_name: postgres-news
+        restart: always
+        ports:
+            - "5432:5432"
+        environment: 
+            POSTGRES_USER: user
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: db
+        volumes:
+            - postgres-news-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-news-data:
