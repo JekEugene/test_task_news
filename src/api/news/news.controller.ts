@@ -6,12 +6,9 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import { CreateNewsDto } from './dto/create-news.dto';
-import { UpdateNewsDto } from './dto/update-news.dto';
-import { NewsService } from './news.service';
-import { AuthGuard } from '../auth/auth.guard';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -23,7 +20,12 @@ import {
 } from '@nestjs/swagger';
 import { GetUserId } from '../../shared/decorators/get-user-id.decorator';
 import { DefaultErrorResponse } from '../../shared/dto/default-error-response.dto';
+import { PaginationQuery } from '../../shared/dto/pagination.dto';
+import { AuthGuard } from '../auth/auth.guard';
+import { CreateNewsDto } from './dto/create-news.dto';
+import { UpdateNewsDto } from './dto/update-news.dto';
 import { NewsDto } from './dto/user.dto';
+import { NewsService } from './news.service';
 
 @ApiTags('news')
 @Controller('news')
@@ -60,8 +62,8 @@ export class NewsController {
     type: DefaultErrorResponse,
   })
   @Get()
-  findAll() {
-    return this.newsService.findAll();
+  findAll(@Query() pagination: PaginationQuery) {
+    return this.newsService.findAll(pagination);
   }
 
   @ApiOperation({

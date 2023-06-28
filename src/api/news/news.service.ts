@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { DefaultResponse } from '../../shared/dto/default-response.dto';
+import { PaginationQuery } from '../../shared/dto/pagination.dto';
 import { ErrorMessage } from '../../shared/enums/error-message.enum';
 import { NewsDto } from './dto/user.dto';
 import { ICreateNews } from './interfaces/create-news.interface';
@@ -16,8 +17,8 @@ export class NewsService {
     return news;
   }
 
-  async findAll(): Promise<NewsDto[]> {
-    const news = await this.newsRepo.getAll();
+  async findAll(pagination: PaginationQuery): Promise<NewsDto[]> {
+    const news = await this.newsRepo.getAll(pagination);
     return news;
   }
 

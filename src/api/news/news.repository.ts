@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PaginationQuery } from '../../shared/dto/pagination.dto';
 import { ErrorMessage } from '../../shared/enums/error-message.enum';
 import { PostgresErrorCode } from '../../shared/enums/postgres-error-code.enum';
 import { NewsEntity } from './entities/news.entity';
@@ -30,8 +31,14 @@ export class NewsRepository {
     }
   }
 
-  async getAll(): Promise<NewsEntity[]> {
-    const news = await this.newsRepository.find();
+  async getAll({ take, skip }: PaginationQuery): Promise<NewsEntity[]> {
+    const news = await this.newsRepository.find({
+      take,
+      skip,
+      order: {
+        title: 'ASC',
+      },
+    });
     return news;
   }
 
