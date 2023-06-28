@@ -15,7 +15,7 @@ export class UserService {
     return toUserListDto(users);
   }
 
-  async findOneById(id: number): Promise<UserDto> {
+  async findById(id: number): Promise<UserDto> {
     const user = await this.userRepo.getById(id);
     if (!user) {
       throw new NotFoundException(ErrorMessage.UserNotFound);

@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Post, Req } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiOkResponse,
@@ -51,6 +52,24 @@ export class AuthController {
   @Post('sign-in')
   signIn(@Body() signInDto: SignInDto) {
     return this.authService.signIn(signInDto);
+  }
+
+  @ApiOperation({
+    summary: 'refresh tokens',
+  })
+  @ApiCreatedResponse({
+    description: 'refresh tokens completed',
+    type: DefaultResponse,
+  })
+  @ApiUnauthorizedResponse({
+    description: 'wrong credentials',
+    type: DefaultErrorResponse,
+  })
+  @ApiBearerAuth()
+  @Post('refresh')
+  refresh(@Req() request: Request) {
+    const token = request.headers['authorization'].split(' ')[1];
+    return this.authService.refresh(token);
   }
 
   @ApiOperation({

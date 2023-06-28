@@ -1,22 +1,25 @@
 import {
   ConflictException,
   Injectable,
-  UnauthorizedException,
+  NotFoundException,
+  UnauthorizedException
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { JwtPayload } from 'jsonwebtoken';
 import { DefaultResponse } from '../../shared/dto/default-response.dto';
 import { ErrorMessage } from '../../shared/enums/error-message.enum';
 import { UserDto } from '../user/dto/user.dto';
 import { ICreateUser } from '../user/interfaces/create-user.interface';
 import { UserService } from '../user/user.service';
+import { RefreshResponseDto } from './dto/refresh.dto';
 import { SignInResponseDto } from './dto/sign-in-response.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
+import { IRefreshToken } from './interfaces/refresh.interface';
 import { IUserPayload } from './interfaces/user-payload.interface';
 import { RefreshTokenRepository } from './refresh-token.repository';
-import { JwtPayload } from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
@@ -65,9 +68,29 @@ export class AuthService {
     return signInDto;
   }
 
+  async refresh({ token, userId }: IRefreshToken): Promise<RefreshResponseDto> {
+    this.validateRefreshToken(token);
+
+    const user = await this.userService.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException(ErrorMessage.UserNotFound);
+    }
+
+    const tokenFromDb = await this.refreshTokenRepo.get(token);
+
+    if (!tokenFromDb) {
+      throw new NotFoundException(ErrorMessage.TokenNotFound);
+    }
+
+    await this.refreshTokenRepo.delete(token);
+
+    const refreshDto = await this.generateTokens(user);
+    return refreshDto;
+  }
+
   async logout(refreshToken: string): Promise<DefaultResponse> {
     const isDeleted = await this.refreshTokenRepo.delete(refreshToken);
-
     return { success: isDeleted };
   }
 
@@ -81,7 +104,7 @@ export class AuthService {
   private async generateTokens(user: UserDto): Promise<SignInResponseDto> {
     const [createdAccessToken, createdRefreshToken] = await Promise.all([
       this.createAccessToken(user),
-      this.createRefreshToken(user.id),
+      this.createRefreshToken(),
     ]);
 
     return {
@@ -103,7 +126,7 @@ export class AuthService {
     return accessToken;
   }
 
-  private async createRefreshToken(userId: number): Promise<string> {
+  private async createRefreshToken(): Promise<string> {
     const expiresIn = this.configService.get<string>('REFRESH_TOKEN_EXPIRES');
     const secret = this.configService.get<string>('REFRESH_TOKEN_SECRET');
 
@@ -115,7 +138,7 @@ export class AuthService {
       },
     );
 
-    await this.refreshTokenRepo.create({ token: refreshToken, userId });
+    await this.refreshTokenRepo.create({ token: refreshToken });
 
     return refreshToken;
   }
@@ -128,6 +151,21 @@ export class AuthService {
     try {
       const result = this.jwtService.verify<IUserPayload>(token, {
         secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
+      });
+      return result;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  validateRefreshToken(token: string): JwtPayload | boolean {
+    if (!token) {
+      return false;
+    }
+
+    try {
+      const result = this.jwtService.verify(token, {
+        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
       });
       return result;
     } catch (error) {

@@ -8,4 +8,5 @@ export enum ErrorMessage {
   UpdateNewsError = 'UPDATE_NEWS_ERROR',
   NotAllowedToEditProvidedNews = 'NOT_ALLOWED_TO_EDIT_PROVIDED_NEWS',
   NotAllowedToDeleteProvidedNews = 'NOT_ALLOWED_TO_DELETE_PROVIDED_NEWS',
+  TokenNotFound = 'TOKEN_NOT_FOUND',
 }

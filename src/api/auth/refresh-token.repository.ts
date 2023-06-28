@@ -11,6 +11,10 @@ export class RefreshTokenRepository {
     private readonly refreshTokenRepository: Repository<RefreshTokenEntity>,
   ) {}
 
+  async get(token: string): Promise<RefreshTokenEntity> {
+    return this.refreshTokenRepository.findOne({ where: { token } });
+  }
+
   async create(
     createRefreshToken: ICreateRefreshToken,
   ): Promise<RefreshTokenEntity> {
