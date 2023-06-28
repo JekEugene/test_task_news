@@ -80,7 +80,8 @@ export class AuthController {
     type: DefaultResponse,
   })
   @Delete('logout')
-  logout() {
-    // return this.authService.logout();
+  logout(@Req() request: Request) {
+    const token = request.headers['authorization'].split(' ')[1];
+    return this.authService.logout(token);
   }
 }
