@@ -9,7 +9,7 @@ import { ErrorMessage } from '../../shared/enums/error-message.enum';
 import { PostgresErrorCode } from '../../shared/enums/postgres-error-code.enum';
 import { NewsEntity } from './entities/news.entity';
 import { ICreateNews } from './interfaces/create-news.interface';
-import { IUpdateNews } from './interfaces/update-news.interface';
+import { IUpdateNewsRepo } from './interfaces/update-news-repo.interface';
 
 @Injectable()
 export class NewsRepository {
@@ -42,7 +42,7 @@ export class NewsRepository {
     return news;
   }
 
-  async update({ id, updateDto }: IUpdateNews): Promise<boolean> {
+  async update({ id, updateDto }: IUpdateNewsRepo): Promise<boolean> {
     try {
       const result = await this.newsRepository.update({ id }, updateDto);
       return Boolean(result.affected);

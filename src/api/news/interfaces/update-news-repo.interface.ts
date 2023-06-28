@@ -1,7 +1,6 @@
 import { UpdateNewsDto } from '../dto/update-news.dto';
 
-export interface IUpdateNews {
+export interface IUpdateNewsRepo {
   id: number;
-  userId: number;
   updateDto: UpdateNewsDto;
 }

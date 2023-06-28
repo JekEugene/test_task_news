@@ -16,6 +16,7 @@ import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { IUserPayload } from './interfaces/user-payload.interface';
 import { RefreshTokenRepository } from './refresh-token.repository';
+import { JwtPayload } from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
@@ -117,5 +118,20 @@ export class AuthService {
     await this.refreshTokenRepo.create({ token: refreshToken, userId });
 
     return refreshToken;
+  }
+
+  validateAccessToken(token: string): IUserPayload | boolean {
+    if (!token) {
+      return false;
+    }
+
+    try {
+      const result = this.jwtService.verify<IUserPayload>(token, {
+        secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
+      });
+      return result;
+    } catch (error) {
+      return false;
+    }
   }
 }

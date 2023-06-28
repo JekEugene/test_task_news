@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { DefaultResponse } from '../../shared/dto/default-response.dto';
+import { ErrorMessage } from '../../shared/enums/error-message.enum';
 import { NewsDto } from './dto/user.dto';
 import { ICreateNews } from './interfaces/create-news.interface';
+import { IRemoveNews } from './interfaces/remove-news.interface';
 import { IUpdateNews } from './interfaces/update-news.interface';
 import { NewsRepository } from './news.repository';
 
@@ -24,12 +26,26 @@ export class NewsService {
     return news;
   }
 
-  async update(updateNews: IUpdateNews): Promise<DefaultResponse> {
-    const isUpdated = await this.newsRepo.update(updateNews);
+  async update({
+    id,
+    userId,
+    updateDto,
+  }: IUpdateNews): Promise<DefaultResponse> {
+    const news = await this.findOne(id);
+    if (news.userId !== userId) {
+      throw new ForbiddenException(ErrorMessage.NotAllowedToEditProvidedNews);
+    }
+
+    const isUpdated = await this.newsRepo.update({ id, updateDto });
     return { success: isUpdated };
   }
 
-  async remove(id: number): Promise<DefaultResponse> {
+  async remove({ id, userId }: IRemoveNews): Promise<DefaultResponse> {
+    const news = await this.findOne(id);
+    if (news.userId !== userId) {
+      throw new ForbiddenException(ErrorMessage.NotAllowedToEditProvidedNews);
+    }
+
     const isDeleted = await this.newsRepo.delete(id);
     return { success: isDeleted };
   }
